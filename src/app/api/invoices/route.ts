@@ -90,7 +90,7 @@ export async function POST(req: Request) {
         toCountry: data.toCountry || '',
         invoiceDate: new Date(data.invoiceDate),
         dueDate: new Date(data.dueDate),
-        items: data.items,
+        items: data.items as any,
         subtotal: data.subtotal,
         tax: data.tax,
         discount: data.discount,

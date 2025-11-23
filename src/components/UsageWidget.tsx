@@ -128,8 +128,8 @@ export default function UsageWidget() {
           <p className="text-sm text-red-600 font-semibold">
             ⚠️ Limit Reached!
           </p>
-          <p className="text-xs text-red-600 mt-1">
-            You've used all your {isInvoiceLimitReached && 'invoices'}{isInvoiceLimitReached && isQuotationLimitReached && ' and '}{isQuotationLimitReached && 'quotations'} for this month.
+            <p className="text-xs text-red-600 mt-1">
+            You&apos;ve used all your {isInvoiceLimitReached && 'invoices'}{isInvoiceLimitReached && isQuotationLimitReached && ' and '}{isQuotationLimitReached && 'quotations'} for this month.
           </p>
         </div>
       )}
@@ -140,7 +140,7 @@ export default function UsageWidget() {
             ⚡ Almost at limit!
           </p>
           <p className="text-xs text-yellow-600 mt-1">
-            You're running low on this month's quota.
+            You&apos;re running low on this month's quota.
           </p>
         </div>
       )}

@@ -184,7 +184,7 @@ export default function Home() {
             Get In Touch
           </h2>
           <p className="text-center text-[#bebebf] mb-8">
-            Have questions? We'd love to hear from you.
+            Have questions? We&apos;d love to hear from you.
           </p>
           <div className="max-w-md mx-auto space-y-4">
             <input

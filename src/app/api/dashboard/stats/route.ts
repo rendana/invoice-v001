@@ -12,6 +12,15 @@ interface Invoice {
   toName: string;
 }
 
+interface Quotation {
+  id: string;
+  total: number;
+  status: string;
+  createdAt: Date;
+  quotationNumber: string;
+  toName: string;
+}
+
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
@@ -33,16 +42,25 @@ export async function GET() {
       orderBy: { createdAt: 'desc' },
     }) as Invoice[];
 
+    const quotations = await prisma.quotation.findMany({
+      where: { userId: user.id },
+      orderBy: { createdAt: 'desc' },
+    }) as Quotation[];
+
     const stats = {
       totalInvoices: invoices.length,
+      totalQuotations: quotations.length,
       totalRevenue: invoices.reduce((sum, inv) => sum + inv.total, 0),
       pendingInvoices: invoices.filter((inv) => inv.status !== 'paid').length,
       paidInvoices: invoices.filter((inv) => inv.status === 'paid').length,
+      activeQuotations: quotations.filter((q) => q.status === 'draft' || q.status === 'sent').length,
+      acceptedQuotations: quotations.filter((q) => q.status === 'accepted').length,
     };
 
     const recentInvoices = invoices.slice(0, 5);
+    const recentQuotations = quotations.slice(0, 5);
 
-    return NextResponse.json({ stats, recentInvoices });
+    return NextResponse.json({ stats, recentInvoices, recentQuotations });
   } catch (error: unknown) {
     console.error('Error fetching dashboard stats:', error);
     return NextResponse.json(

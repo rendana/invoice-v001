@@ -44,7 +44,7 @@ export default function AboutPage() {
           <div className="bg-white rounded-xl p-8 shadow-sm border border-[#e9eaea] mb-8">
             <h2 className="text-2xl font-bold text-[#464646] mb-4">Our Mission</h2>
             <p className="text-[#464646] leading-relaxed">
-              At InvoiceGen, we believe that creating professional invoices shouldn't be complicated or expensive. 
+              At InvoiceGen, we believe that creating professional invoices shouldn&apos;t be complicated or expensive. 
               Our mission is to empower small businesses, freelancers, and entrepreneurs with a simple, beautiful, 
               and powerful invoicing solution that helps them get paid faster.
             </p>
@@ -58,7 +58,7 @@ export default function AboutPage() {
               anyone could use, regardless of their technical expertise.
             </p>
             <p className="text-[#464646] leading-relaxed">
-              Today, we're proud to serve thousands of businesses worldwide, helping them create beautiful invoices 
+              Today, we&apos;re proud to serve thousands of businesses worldwide, helping them create beautiful invoices 
               and get paid faster. Our commitment to simplicity, security, and user experience drives everything we do.
             </p>
           </div>

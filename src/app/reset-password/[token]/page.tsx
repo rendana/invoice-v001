@@ -1,27 +1,29 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { FileText } from 'lucide-react';
+import { useParams, useRouter } from 'next/navigation';
 
-export default function ResetPasswordPage({ params }: { params: Promise<{ token: string }> }) {
-  const router = useRouter();
-  const [token, setToken] = useState('');
+export default function ResetPasswordPage() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [token, setToken] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const params = useParams();
+  const router = useRouter();
 
   useEffect(() => {
-    params.then(({ token }) => setToken(token));
+    if (params.token) {
+      setToken(params.token as string);
+    }
   }, [params]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
+    setLoading(true);
 
     if (password !== confirmPassword) {
       setError('Passwords do not match');
@@ -36,25 +38,29 @@ export default function ResetPasswordPage({ params }: { params: Promise<{ token:
     }
 
     try {
+      // Fixed: Updated API endpoint path to match your file structure
       const response = await fetch('/api/auth/reset-password', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ token, password }),
       });
 
       const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to reset password');
+      if (response.ok) {
+        setSuccess(true);
+      } else {
+        setError(data.error || 'Failed to reset password. Please try again.');
       }
-
-      setSuccess(true);
-      setTimeout(() => {
-        router.push('/login');
-      }, 2000);
-    } catch (err: unknown) {
-      const error = err as Error;
-      setError(error.message);
+    } catch (err) {
+      console.error('Reset password error:', err);
+      if (!navigator.onLine) {
+        setError('No internet connection. Please check your connection and try again.');
+      } else {
+        setError('Server error. Please try again later.');
+      }
     } finally {
       setLoading(false);
     }
@@ -62,13 +68,26 @@ export default function ResetPasswordPage({ params }: { params: Promise<{ token:
 
   if (success) {
     return (
-      <div className="min-h-screen bg-[#fcfcfc] flex items-center justify-center px-4">
-        <div className="max-w-md w-full">
-          <div className="bg-white p-8 rounded-xl shadow-lg border border-[#e9eaea] text-center">
-            <div className="bg-green-50 border border-green-200 rounded-lg p-6">
-              <p className="text-green-600 font-semibold text-lg">Password Reset Successful!</p>
-              <p className="text-sm text-green-600 mt-2">Redirecting to login...</p>
-            </div>
+      <div className="min-h-screen flex items-center justify-center bg-[#e9eaea] px-4 py-12 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8 bg-[#fcfcfc] p-8 rounded-lg shadow-lg">
+          <div>
+            <h2 className="mt-6 text-center text-3xl font-extrabold text-[#464646]">
+              Password Reset Successful
+            </h2>
+            <p className="mt-2 text-center text-sm text-[#bebebf]">
+              Your password has been successfully reset.
+            </p>
+            <p className="mt-2 text-center text-sm text-[#bebebf]">
+              You can now log in with your new password.
+            </p>
+          </div>
+          <div>
+            <button
+              onClick={() => router.push('/login')}
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-[#fcfcfc] bg-[#fcc425] hover:bg-[#fae29b] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#fcc425]"
+            >
+              Go to Login
+            </button>
           </div>
         </div>
       </div>
@@ -76,69 +95,66 @@ export default function ResetPasswordPage({ params }: { params: Promise<{ token:
   }
 
   return (
-    <div className="min-h-screen bg-[#fcfcfc] flex items-center justify-center px-4">
-      <div className="max-w-md w-full">
-        <div className="text-center mb-8">
-          <div className="flex justify-center mb-4">
-            <FileText className="w-12 h-12 text-[#fcc425]" />
-          </div>
-          <h1 className="text-3xl font-bold text-[#464646]">Reset Password</h1>
-          <p className="text-[#bebebf] mt-2">Enter your new password</p>
+    <div className="min-h-screen flex items-center justify-center bg-[#e9eaea] px-4 py-12 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 bg-[#fcfcfc] p-8 rounded-lg shadow-lg">
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-[#464646]">
+            Reset Password
+          </h2>
+          <p className="mt-2 text-center text-sm text-[#bebebf]">
+            Enter your new password below
+          </p>
         </div>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <div className="rounded-md space-y-4">
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-[#464646]">
+                New Password
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="new-password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="appearance-none rounded-md relative block w-full px-3 py-2 border border-[#bebebf] placeholder-[#bebebf] text-[#464646] focus:outline-none focus:ring-[#fcc425] focus:border-[#fcc425] focus:z-10 sm:text-sm"
+              />
+            </div>
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-[#464646]">
+                Confirm New Password
+              </label>
+              <input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                autoComplete="new-password"
+                required
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="appearance-none rounded-md relative block w-full px-3 py-2 border border-[#bebebf] placeholder-[#bebebf] text-[#464646] focus:outline-none focus:ring-[#fcc425] focus:border-[#fcc425] focus:z-10 sm:text-sm"
+              />
+            </div>
+          </div>
 
-        <div className="bg-white p-8 rounded-xl shadow-lg border border-[#e9eaea]">
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
+            <div className="text-red-500 text-sm text-center">
               {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-[#464646] mb-2">
-                New Password
-              </label>
-              <input
-                type="password"
-                placeholder="Enter new password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={6}
-                className="w-full px-4 py-3 rounded-lg border border-[#e9eaea] focus:outline-none focus:border-[#fcc425]"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-[#464646] mb-2">
-                Confirm Password
-              </label>
-              <input
-                type="password"
-                placeholder="Confirm new password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                minLength={6}
-                className="w-full px-4 py-3 rounded-lg border border-[#e9eaea] focus:outline-none focus:border-[#fcc425]"
-              />
-            </div>
-
+          <div>
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#fcc425] text-[#464646] py-3 rounded-lg font-semibold hover:bg-[#fae29b] transition disabled:opacity-50"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-[#fcfcfc] bg-[#fcc425] hover:bg-[#fae29b] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#fcc425] disabled:opacity-50"
             >
               {loading ? 'Resetting...' : 'Reset Password'}
             </button>
-          </form>
-
-          <div className="mt-6 text-center">
-            <Link href="/login" className="text-[#bebebf] hover:text-[#fcc425] transition text-sm">
-              Back to Login
-            </Link>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );

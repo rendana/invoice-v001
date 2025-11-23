@@ -175,7 +175,7 @@ export default function TermsPage() {
           <div className="bg-white rounded-xl p-8 shadow-sm border border-[#e9eaea]">
             <h2 className="text-2xl font-bold text-[#464646] mb-4">10. Disclaimer</h2>
             <p className="text-[#464646] leading-relaxed">
-              Your use of the Service is at your sole risk. The Service is provided on an "AS IS" and "AS AVAILABLE" 
+              Your use of the Service is at your sole risk. The Service is provided on an &quot;AS IS&quot; and &quot;AS AVAILABLE&quot; 
               basis. The Service is provided without warranties of any kind, whether express or implied.
             </p>
           </div>
@@ -194,7 +194,7 @@ export default function TermsPage() {
             <p className="text-[#464646] leading-relaxed">
               We reserve the right, at our sole discretion, to modify or replace these Terms at any time. We will 
               provide notice of any significant changes by posting the new Terms on this page and updating the 
-              "Last updated" date. Your continued use of the Service after any changes constitutes acceptance.
+              &quot;Last updated&quot; date. Your continued use of the Service after any changes constitutes acceptance.
             </p>
           </div>
 

@@ -30,6 +30,10 @@ interface InvoiceData {
   discount: number;
   notes: string;
   terms: string;
+  logoUrl?: string;
+  logoPosition?: 'top-left' | 'top-center' | 'top-right';
+  signatureUrl?: string;
+  signaturePosition?: 'bottom-left' | 'bottom-center' | 'bottom-right';
 }
 
 interface InvoiceEditorProps {
@@ -429,6 +433,86 @@ export default function InvoiceEditor({
         </div>
       </div>
 
+      {/* Logo & Signature */}
+      <div>
+        <h3 className="text-lg font-semibold text-[#464646] mb-3">Branding</h3>
+        <div className="grid grid-cols-2 gap-6">
+          <div>
+            <label className="text-sm font-medium text-[#464646] mb-2 block">Company Logo</label>
+            <input
+              type="text"
+              placeholder="Paste image URL here"
+              value={invoiceData.logoUrl || ''}
+              onChange={(e) => updateField('logoUrl', e.target.value)}
+              className="w-full px-4 py-2 rounded-lg border border-[#e9eaea] focus:outline-none focus:border-[#fcc425]"
+            />
+            {invoiceData.logoUrl && (
+              <>
+                <div className="mt-2 p-2 border border-[#e9eaea] rounded-lg bg-[#fcfcfc]">
+                  <img 
+                    src={invoiceData.logoUrl} 
+                    alt="Logo Preview" 
+                    className="max-h-16 max-w-full object-contain"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
+                  />
+                </div>
+                <div className="mt-2">
+                  <label className="text-sm text-[#bebebf] mb-1 block">Logo Position</label>
+                  <select
+                    value={invoiceData.logoPosition || 'top-right'}
+                    onChange={(e) => updateField('logoPosition', e.target.value)}
+                    className="w-full px-4 py-2 rounded-lg border border-[#e9eaea] focus:outline-none focus:border-[#fcc425]"
+                  >
+                    <option value="top-left">Top Left</option>
+                    <option value="top-center">Top Center</option>
+                    <option value="top-right">Top Right</option>
+                  </select>
+                </div>
+              </>
+            )}
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-[#464646] mb-2 block">Signature</label>
+            <input
+              type="text"
+              placeholder="Paste signature image URL here"
+              value={invoiceData.signatureUrl || ''}
+              onChange={(e) => updateField('signatureUrl', e.target.value)}
+              className="w-full px-4 py-2 rounded-lg border border-[#e9eaea] focus:outline-none focus:border-[#fcc425]"
+            />
+            {invoiceData.signatureUrl && (
+              <>
+                <div className="mt-2 p-2 border border-[#e9eaea] rounded-lg bg-[#fcfcfc]">
+                  <img 
+                    src={invoiceData.signatureUrl} 
+                    alt="Signature Preview" 
+                    className="max-h-16 max-w-full object-contain"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
+                  />
+                </div>
+                <div className="mt-2">
+                  <label className="text-sm text-[#bebebf] mb-1 block">Signature Position</label>
+                  <select
+                    value={invoiceData.signaturePosition || 'bottom-right'}
+                    onChange={(e) => updateField('signaturePosition', e.target.value)}
+                    className="w-full px-4 py-2 rounded-lg border border-[#e9eaea] focus:outline-none focus:border-[#fcc425]"
+                  >
+                    <option value="bottom-left">Bottom Left</option>
+                    <option value="bottom-center">Bottom Center</option>
+                    <option value="bottom-right">Bottom Right</option>
+                  </select>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* Action Buttons */}
       <div className="flex flex-wrap gap-3 pt-4 border-t border-[#e9eaea]">
         <button
@@ -439,14 +523,18 @@ export default function InvoiceEditor({
           <Save className="w-4 h-4" />
           <span>{isEditing ? 'Update Draft' : 'Save Draft'}</span>
         </button>
-        <button
-          onClick={handleDownload}
-          disabled={loading}
-          className="flex-1 bg-[#fae29b] text-[#464646] py-3 rounded-lg font-semibold hover:bg-[#fcc425] transition disabled:opacity-50 flex items-center justify-center space-x-2"
-        >
-          <Download className="w-4 h-4" />
-          <span>Download PDF</span>
-        </button>
+
+        {isEditing && (
+          <button
+            onClick={handleDownload}
+            disabled={loading}
+            className="flex-1 bg-[#fae29b] text-[#464646] py-3 rounded-lg font-semibold hover:bg-[#fcc425] transition disabled:opacity-50 flex items-center justify-center space-x-2"
+          >
+            <Download className="w-4 h-4" />
+            <span>Download PDF</span>
+          </button>
+        )}
+
         <button
           onClick={() => handleSave('sent')}
           disabled={loading}

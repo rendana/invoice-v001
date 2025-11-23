@@ -68,7 +68,7 @@ export default function TestLinksPage() {
           <h2 className="font-bold mb-2">Test Result:</h2>
           <p className="text-[#464646]">
             ✅ If Next.js Link works → Your navigation is fine<br/>
-            ✅ If useRouter works → Links need 'use client'<br/>
+            ✅ If useRouter works → Links need {'\'use client\''}<br/>
             ❌ If nothing works → Check browser console (F12)
           </p>
         </div>

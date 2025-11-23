@@ -224,7 +224,7 @@ export default function PrivacyPage() {
             <h2 className="text-2xl font-bold text-[#464646] mb-4">11. Changes to This Privacy Policy</h2>
             <p className="text-[#464646] leading-relaxed">
               We may update our Privacy Policy from time to time. We will notify you of any changes by posting 
-              the new Privacy Policy on this page and updating the "Last updated" date. You are advised to 
+              the new Privacy Policy on this page and updating the &quot;Last updated&quot; date. You are advised to 
               review this Privacy Policy periodically for any changes.
             </p>
           </div>

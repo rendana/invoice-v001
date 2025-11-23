@@ -12,6 +12,9 @@ export async function POST() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+// function to fetch user data
+
+
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
     });

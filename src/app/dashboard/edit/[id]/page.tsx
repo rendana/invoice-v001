@@ -5,11 +5,36 @@ import { useParams, useRouter } from 'next/navigation';
 import InvoiceEditor from '@/components/InvoiceEditor';
 import InvoicePreview from '@/components/InvoicePreview';
 
+interface InvoiceData {
+  fromName: string;
+  fromEmail: string;
+  fromAddress: string;
+  fromCity: string;
+  fromCountry: string;
+  toName: string;
+  toEmail: string;
+  toAddress: string;
+  toCity: string;
+  toCountry: string;
+  invoiceNumber: string;
+  invoiceDate: string;
+  dueDate: string;
+  items: { description: string; quantity: number; rate: number; amount: number }[];
+  tax: number;
+  discount: number;
+  notes: string;
+  terms: string;
+  logoUrl?: string;
+  logoPosition?: 'top-left' | 'top-center' | 'top-right';
+  signatureUrl?: string;
+  signaturePosition?: 'bottom-left' | 'bottom-center' | 'bottom-right';
+}
+
 export default function EditInvoicePage() {
-  const params = useParams();
+  const params = useParams() as { id: string } | null;
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [invoiceData, setInvoiceData] = useState({
+  const [invoiceData, setInvoiceData] = useState<InvoiceData>({
     fromName: '',
     fromEmail: '',
     fromAddress: '',
@@ -28,48 +53,59 @@ export default function EditInvoicePage() {
     discount: 0,
     notes: '',
     terms: '',
+    logoUrl: '',
+    logoPosition: 'top-right',
+    signatureUrl: '',
+    signaturePosition: 'bottom-right',
   });
 
   useEffect(() => {
-    fetchInvoice();
-  }, []);
+    if (!params?.id) return;
 
-  const fetchInvoice = async () => {
-    try {
-      const response = await fetch(`/api/invoices/${params.id}`);
-      if (!response.ok) {
-        throw new Error('Invoice not found');
+    const id = params.id as string;
+    const fetchInvoice = async () => {
+      try {
+        const response = await fetch(`/api/invoices/${id}`);
+        if (!response.ok) {
+          throw new Error('Invoice not found');
+        }
+        const invoice = await response.json();
+        
+        setInvoiceData({
+          fromName: invoice.fromName || '',
+          fromEmail: invoice.fromEmail || '',
+          fromAddress: invoice.fromAddress || '',
+          fromCity: invoice.fromCity || '',
+          fromCountry: invoice.fromCountry || '',
+          toName: invoice.toName || '',
+          toEmail: invoice.toEmail || '',
+          toAddress: invoice.toAddress || '',
+          toCity: invoice.toCity || '',
+          toCountry: invoice.toCountry || '',
+          invoiceNumber: invoice.invoiceNumber || '',
+          invoiceDate: new Date(invoice.invoiceDate).toISOString().split('T')[0],
+          dueDate: new Date(invoice.dueDate).toISOString().split('T')[0],
+          items: invoice.items as any,
+          tax: invoice.tax || 0,
+          discount: invoice.discount || 0,
+          notes: invoice.notes || '',
+          terms: invoice.terms || '',
+          logoUrl: invoice.logoUrl || '',
+          logoPosition: invoice.logoPosition || 'top-right',
+          signatureUrl: invoice.signatureUrl || '',
+          signaturePosition: invoice.signaturePosition || 'bottom-right',
+        });
+      } catch (error) {
+        console.error('Error fetching invoice:', error);
+        alert('Failed to load invoice');
+        router.push('/dashboard/invoices');
+      } finally {
+        setLoading(false);
       }
-      const invoice = await response.json();
-      
-      setInvoiceData({
-        fromName: invoice.fromName || '',
-        fromEmail: invoice.fromEmail || '',
-        fromAddress: invoice.fromAddress || '',
-        fromCity: invoice.fromCity || '',
-        fromCountry: invoice.fromCountry || '',
-        toName: invoice.toName || '',
-        toEmail: invoice.toEmail || '',
-        toAddress: invoice.toAddress || '',
-        toCity: invoice.toCity || '',
-        toCountry: invoice.toCountry || '',
-        invoiceNumber: invoice.invoiceNumber || '',
-        invoiceDate: new Date(invoice.invoiceDate).toISOString().split('T')[0],
-        dueDate: new Date(invoice.dueDate).toISOString().split('T')[0],
-        items: invoice.items as any,
-        tax: invoice.tax || 0,
-        discount: invoice.discount || 0,
-        notes: invoice.notes || '',
-        terms: invoice.terms || '',
-      });
-    } catch (error) {
-      console.error('Error fetching invoice:', error);
-      alert('Failed to load invoice');
-      router.push('/dashboard/invoices');
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+
+    fetchInvoice();
+  }, [params, router]);
 
   if (loading) {
     return (
@@ -92,7 +128,7 @@ export default function EditInvoicePage() {
             invoiceData={invoiceData} 
             setInvoiceData={setInvoiceData}
             isEditing={true}
-            invoiceId={params.id as string}
+            invoiceId={params?.id as string}
           />
         </div>
 

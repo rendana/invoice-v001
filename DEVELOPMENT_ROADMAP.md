@@ -197,7 +197,7 @@
 
 ### ⚠️ PARTIALLY IMPLEMENTED (Needs Completion)
 1. **Quotation System**
-   - Database model ✅
+   - Database model ❌
    - Editor UI ❌
    - List page ❌
    - PDF generation ❌
@@ -222,7 +222,7 @@
 10. **Multi-Currency** - Currency support
 11. **Team Features** - Multi-user access
 12. **Email Notifications** - Usage alerts
-
+13. **option to add user logo and signature to invoice and Quotation** 
 ---
 
 ## 🎯 RECOMMENDED NEXT STEPS (Priority Order)

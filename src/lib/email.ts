@@ -127,69 +127,26 @@ interface SendPasswordResetEmailParams {
   userName?: string;
 }
 
-export async function sendPasswordResetEmail({
-  to,
-  resetToken,
-  userName,
-}: SendPasswordResetEmailParams) {
-  const resetUrl = `${process.env.NEXTAUTH_URL}/reset-password?token=${resetToken}`;
-
+// src/lib/email.ts (add this function)
+export async function sendPasswordResetEmail(to: string, name: string, resetUrl: string) {
   try {
-    const { data, error } = await resend.emails.send({
-      from: 'InvoiceGen <onboarding@resend.dev>',
-      to: [to],
-      subject: 'Reset Your Password - InvoiceGen',
+    const result = await resend.emails.send({
+      from: process.env.FROM_EMAIL!,
+      to,
+      subject: 'Reset your password',
       html: `
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <meta charset="utf-8">
-            <title>Reset Password</title>
-          </head>
-          <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-              <h1 style="color: white; margin: 0;">Reset Your Password</h1>
-            </div>
-            
-            <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
-              <p style="font-size: 16px;">Hello ${userName || 'there'},</p>
-              
-              <p style="font-size: 16px;">
-                We received a request to reset your password. Click the button below to create a new password:
-              </p>
-              
-              <div style="text-align: center; margin: 30px 0;">
-                <a href="${resetUrl}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
-                  Reset Password
-                </a>
-              </div>
-              
-              <p style="font-size: 14px; color: #666;">
-                Or copy and paste this link into your browser:<br>
-                <a href="${resetUrl}" style="color: #667eea; word-break: break-all;">${resetUrl}</a>
-              </p>
-              
-              <p style="font-size: 14px; color: #666; margin-top: 30px;">
-                This link will expire in 1 hour. If you didn't request a password reset, you can safely ignore this email.
-              </p>
-              
-              <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #888; font-size: 14px;">
-                <p>InvoiceGen - Invoice Management Made Easy</p>
-              </div>
-            </div>
-          </body>
-        </html>
+        <h2>Password Reset Request</h2>
+        <p>Hello ${name || 'there'},</p>
+        <p>You requested to reset your password. Click the link below to set a new password:</p>
+        <p><a href="${resetUrl}" style="background-color: #f59e0b; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Reset Password</a></p>
+        <p>If you didn't request this, please ignore this email.</p>
+        <p>This link will expire in 1 hour.</p>
       `,
     });
 
-    if (error) {
-      console.error('Password reset email error:', error);
-      return { success: false, error: error.message };
-    }
-
-    return { success: true, data };
+    return { success: true, messageId: result.data?.id };
   } catch (error) {
-    console.error('Password reset email exception:', error);
+    console.error('Failed to send password reset email:', error);
     return { success: false, error: 'Failed to send email' };
   }
 }

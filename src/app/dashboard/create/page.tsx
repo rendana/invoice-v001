@@ -6,12 +6,37 @@ import InvoiceEditor from '@/components/InvoiceEditor';
 import InvoicePreview from '@/components/InvoicePreview';
 import UpgradeModal from '@/components/UpgradeModal';
 
+interface InvoiceData {
+  fromName: string;
+  fromEmail: string;
+  fromAddress: string;
+  fromCity: string;
+  fromCountry: string;
+  toName: string;
+  toEmail: string;
+  toAddress: string;
+  toCity: string;
+  toCountry: string;
+  invoiceNumber: string;
+  invoiceDate: string;
+  dueDate: string;
+  items: { description: string; quantity: number; rate: number; amount: number }[];
+  tax: number;
+  discount: number;
+  notes: string;
+  terms: string;
+  logoUrl?: string;
+  logoPosition?: 'top-left' | 'top-center' | 'top-right';
+  signatureUrl?: string;
+  signaturePosition?: 'bottom-left' | 'bottom-center' | 'bottom-right';
+}
+
 export default function CreateInvoicePage() {
   const router = useRouter();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [canCreate, setCanCreate] = useState(true);
   const [limitMessage, setLimitMessage] = useState('');
-  const [invoiceData, setInvoiceData] = useState({
+  const [invoiceData, setInvoiceData] = useState<InvoiceData>({
     fromName: '',
     fromEmail: '',
     fromAddress: '',
@@ -30,6 +55,10 @@ export default function CreateInvoicePage() {
     discount: 0,
     notes: '',
     terms: '',
+    logoUrl: '',
+    logoPosition: 'top-right',
+    signatureUrl: '',
+    signaturePosition: 'bottom-right',
   });
 
   useEffect(() => {

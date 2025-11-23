@@ -4,7 +4,8 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { sendInvoiceEmail } from '@/lib/email';
 import React from 'react';
-
+import { StyleSheet } from '@react-pdf/renderer';
+import applyWatermark from '@/lib/pdf/watermark';
 interface InvoiceItem {
   description: string;
   quantity: number;
@@ -44,14 +45,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    // Check if user is on free plan
-    const isFreePlan = invoice.user.plan === 'free';
+    // Check if user is on free plan (case-insensitive, tolerant of missing values)
+    const isFreePlan = !invoice.user || (typeof invoice.user.plan === 'string' && invoice.user.plan.toLowerCase() === 'free');
 
     // Generate PDF using React.createElement (avoid JSX in API routes)
     const ReactPDF = await import('@react-pdf/renderer');
     const { Document, Page, Text, View, StyleSheet, pdf } = ReactPDF;
 
-    const items = invoice.items as InvoiceItem[];
+const items = (typeof invoice.items === 'string' 
+  ? JSON.parse(invoice.items) 
+  : invoice.items) as InvoiceItem[];
 
     const pdfDoc = React.createElement(
       Document,
@@ -167,19 +170,42 @@ export async function POST(req: Request) {
           React.createElement(Text, { style: styles.label }, 'Notes:'),
           React.createElement(Text, { style: styles.text }, invoice.notes)
         ),
-        // Watermark for Free Plan
-        isFreePlan && React.createElement(
-          View,
-          { style: styles.watermark },
-          React.createElement(Text, { style: styles.watermarkText }, '⚡ Generated with InvoiceGen - Free Plan'),
-          React.createElement(Text, { style: styles.watermarkSubtext }, 'Upgrade to remove watermark • invoicegen.com')
-        )
+        // Watermark handled post-generation for free plans via pdf utility
       )
     );
 
     // Generate PDF buffer
     const pdfBlob = await pdf(pdfDoc).toBlob();
-    const pdfBuffer = Buffer.from(await pdfBlob.arrayBuffer());
+    const originalArrayBuffer = await pdfBlob.arrayBuffer();
+
+    // If free plan, try applying watermark post-generation (non-blocking on failure)
+    let finalBuffer: Buffer;
+    if (isFreePlan) {
+      try {
+        console.log('Send route: applying watermark for free plan user', invoice.user?.email || invoice.userId);
+        const watermarked = await applyWatermark(originalArrayBuffer, '⚡ Generated with InvoiceGen - Free Plan');
+
+        let uint8: Uint8Array;
+        if (watermarked instanceof Uint8Array) {
+          uint8 = Uint8Array.from(watermarked);
+        } else if (watermarked instanceof ArrayBuffer) {
+          uint8 = new Uint8Array(watermarked);
+        } else if (ArrayBuffer.isView(watermarked)) {
+          const view = watermarked as ArrayBufferView & { byteOffset?: number; byteLength?: number };
+          const tmp = new Uint8Array((view as any).buffer, view.byteOffset ?? 0, view.byteLength ?? 0);
+          uint8 = Uint8Array.from(tmp);
+        } else {
+          uint8 = Uint8Array.from(watermarked as any || []);
+        }
+
+        finalBuffer = Buffer.from(uint8.buffer);
+      } catch (err) {
+        console.error('Send route: watermarking failed, falling back to original PDF', err);
+        finalBuffer = Buffer.from(originalArrayBuffer);
+      }
+    } else {
+      finalBuffer = Buffer.from(originalArrayBuffer);
+    }
 
     // Send email with PDF attachment
     const emailResult = await sendInvoiceEmail({
@@ -187,7 +213,7 @@ export async function POST(req: Request) {
       invoiceNumber: invoice.invoiceNumber,
       invoiceDate: new Date(invoice.invoiceDate).toLocaleDateString(),
       total: `$${invoice.total.toFixed(2)}`,
-      pdfBuffer,
+      pdfBuffer: finalBuffer,
       fromName: invoice.fromName,
     });
 

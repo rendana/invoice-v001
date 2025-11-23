@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import React from 'react';
+import applyWatermark from '@/lib/pdf/watermark';
+import { prisma } from '@/lib/prisma';
 
 interface InvoiceItem {
   description: string;
@@ -57,7 +59,8 @@ export async function POST(req: Request) {
       select: { plan: true }
     });
 
-    const isFreePlan = !user || user.plan === 'free';
+    // Treat plan check case-insensitively and allow missing values to default to free
+    const isFreePlan = !user || (typeof user.plan === 'string' && user.plan.toLowerCase() === 'free');
 
     // Dynamically import react-pdf/renderer
     const ReactPDF = await import('@react-pdf/renderer');
@@ -312,14 +315,7 @@ export async function POST(req: Request) {
             React.createElement(Text, null, data.terms)
           ),
 
-        // Watermark for Free Plan
-        isFreePlan &&
-          React.createElement(
-            View,
-            { style: styles.watermark },
-            React.createElement(Text, { style: styles.watermarkText }, '⚡ Generated with InvoiceGen - Free Plan'),
-            React.createElement(Text, { style: styles.watermarkSubtext }, 'Upgrade to remove watermark • invoicegen.com')
-          )
+          // Watermark handled post-generation for free plans via pdf utility
       )
     );
 
@@ -327,12 +323,48 @@ export async function POST(req: Request) {
     const pdfBlob = await pdf(InvoicePDF).toBlob();
     const buffer = await pdfBlob.arrayBuffer();
 
-    return new NextResponse(buffer, {
-      headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="${data.invoiceNumber}.pdf"`,
-      },
-    });
+      // If user is on the free plan, apply a watermark using the pdf utility.
+      if (isFreePlan) {
+        try {
+          console.log('PDF route: applying watermark for free plan user', session.user.email);
+          const watermarked = await applyWatermark(buffer, '⚡ Generated with InvoiceGen - Free Plan');
+
+          // Normalize various return types to a Uint8Array
+          let uint8: Uint8Array;
+          if (watermarked instanceof Uint8Array) {
+            uint8 = Uint8Array.from(watermarked);
+          } else if (watermarked instanceof ArrayBuffer) {
+            uint8 = new Uint8Array(watermarked);
+          } else if (ArrayBuffer.isView(watermarked)) {
+            const view = watermarked as ArrayBufferView & { byteOffset?: number; byteLength?: number };
+            const tmp = new Uint8Array((view as any).buffer, view.byteOffset ?? 0, view.byteLength ?? 0);
+            uint8 = Uint8Array.from(tmp);
+          } else {
+            uint8 = Uint8Array.from(watermarked as any || []);
+          }
+
+          const copy = Uint8Array.from(uint8);
+          const body = new Blob([copy.buffer], { type: 'application/pdf' });
+          return new NextResponse(body, {
+            headers: {
+              'Content-Type': 'application/pdf',
+              'Content-Disposition': `attachment; filename="${data.invoiceNumber}.pdf"`,
+            },
+          });
+        } catch (err) {
+          console.error('PDF route: watermarking failed, returning original PDF', err);
+          // Fall through to return the original PDF buffer below
+        }
+      }
+
+      // Wrap ArrayBuffer in a Blob so the response body matches BodyInit
+      const body = new Blob([buffer], { type: 'application/pdf' });
+      return new NextResponse(body, {
+        headers: {
+          'Content-Type': 'application/pdf',
+          'Content-Disposition': `attachment; filename="${data.invoiceNumber}.pdf"`,
+        },
+      });
   } catch (error: unknown) {
     console.error('Error generating PDF:', error);
     return NextResponse.json(

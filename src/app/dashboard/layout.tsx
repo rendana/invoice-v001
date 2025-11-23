@@ -60,12 +60,31 @@ export default function DashboardLayout({
                 Invoices
               </Link>
               <Link 
-                href="/dashboard/create" 
-                className="bg-[#fcc425] text-[#464646] px-4 py-2 rounded-lg font-semibold hover:bg-[#fae29b] transition flex items-center space-x-2"
+                href="/dashboard/quotations" 
+                className="text-[#464646] hover:text-[#fcc425] transition"
               >
-                <PlusCircle className="w-4 h-4" />
-                <span>New Invoice</span>
+                Quotations
               </Link>
+              <div className="relative group">
+                <button className="bg-[#fcc425] text-[#464646] px-4 py-2 rounded-lg font-semibold hover:bg-[#fae29b] transition flex items-center space-x-2">
+                  <PlusCircle className="w-4 h-4" />
+                  <span>Create</span>
+                </button>
+                <div className="absolute hidden group-hover:block bg-white shadow-lg rounded-lg mt-0 py-2 min-w-max z-10">
+                  <Link 
+                    href="/dashboard/create" 
+                    className="block px-4 py-2 text-[#464646] hover:bg-[#fcfcfc]"
+                  >
+                    New Invoice
+                  </Link>
+                  <Link 
+                    href="/dashboard/quotations/create" 
+                    className="block px-4 py-2 text-[#464646] hover:bg-[#fcfcfc]"
+                  >
+                    New Quotation
+                  </Link>
+                </div>
+              </div>
               <div className="flex items-center space-x-4 border-l border-[#e9eaea] pl-6">
                 <span className="text-sm text-[#bebebf]">{session.user?.email}</span>
                 <button
@@ -104,10 +123,22 @@ export default function DashboardLayout({
                 Invoices
               </Link>
               <Link 
+                href="/dashboard/quotations" 
+                className="block text-[#464646] hover:text-[#fcc425] transition"
+              >
+                Quotations
+              </Link>
+              <Link 
                 href="/dashboard/create" 
                 className="block bg-[#fcc425] text-[#464646] px-4 py-2 rounded-lg font-semibold text-center hover:bg-[#fae29b] transition"
               >
                 New Invoice
+              </Link>
+              <Link 
+                href="/dashboard/quotations/create" 
+                className="block bg-[#fcc425] text-[#464646] px-4 py-2 rounded-lg font-semibold text-center hover:bg-[#fae29b] transition"
+              >
+                New Quotation
               </Link>
               <div className="pt-3 border-t border-[#e9eaea]">
                 <span className="block text-sm text-[#bebebf] mb-2">{session.user?.email}</span>

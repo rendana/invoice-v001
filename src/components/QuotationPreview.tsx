@@ -1,13 +1,13 @@
 'use client';
 
-interface InvoiceItem {
+interface QuotationItem {
   description: string;
   quantity: number;
   rate: number;
   amount: number;
 }
 
-interface InvoiceData {
+interface QuotationData {
   fromName: string;
   fromEmail: string;
   fromAddress: string;
@@ -18,10 +18,10 @@ interface InvoiceData {
   toAddress: string;
   toCity: string;
   toCountry: string;
-  invoiceNumber: string;
-  invoiceDate: string;
-  dueDate: string;
-  items: InvoiceItem[];
+  quotationNumber: string;
+  quotationDate: string;
+  validUntil: string;
+  items: QuotationItem[];
   tax: number;
   discount: number;
   notes: string;
@@ -32,29 +32,29 @@ interface InvoiceData {
   signaturePosition?: 'bottom-left' | 'bottom-center' | 'bottom-right';
 }
 
-export default function InvoicePreview({ invoiceData }: { invoiceData: InvoiceData }) {
+export default function QuotationPreview({ quotationData }: { quotationData: QuotationData }) {
   const calculateSubtotal = () => {
-    return invoiceData.items.reduce((sum, item) => sum + item.amount, 0);
+    return quotationData.items.reduce((sum, item) => sum + item.amount, 0);
   };
 
   const calculateTotal = () => {
     const subtotal = calculateSubtotal();
-    const taxAmount = (subtotal * invoiceData.tax) / 100;
-    const discountAmount = (subtotal * invoiceData.discount) / 100;
+    const taxAmount = (subtotal * quotationData.tax) / 100;
+    const discountAmount = (subtotal * quotationData.discount) / 100;
     return subtotal + taxAmount - discountAmount;
   };
 
   return (
     <div className="bg-white rounded-xl shadow-lg border border-[#e9eaea] p-8 min-h-[800px] relative">
       {/* Top Logo */}
-      {invoiceData.logoUrl && (
+      {quotationData.logoUrl && (
         <div className={`absolute top-8 flex justify-start ${
-          invoiceData.logoPosition === 'top-center' ? 'justify-center' : 
-          invoiceData.logoPosition === 'top-right' ? 'justify-end' : 
+          quotationData.logoPosition === 'top-center' ? 'justify-center' : 
+          quotationData.logoPosition === 'top-right' ? 'justify-end' : 
           'justify-start'
-        } ${invoiceData.logoPosition?.includes('left') ? 'left-8' : invoiceData.logoPosition?.includes('right') ? 'right-8' : 'left-1/2 -translate-x-1/2'}`}>
+        } ${quotationData.logoPosition?.includes('left') ? 'left-8' : quotationData.logoPosition?.includes('right') ? 'right-8' : 'left-1/2 -translate-x-1/2'}`}>
           <img 
-            src={invoiceData.logoUrl} 
+            src={quotationData.logoUrl} 
             alt="Company Logo" 
             className="h-16 max-w-xs object-contain"
             onError={(e) => {
@@ -65,9 +65,9 @@ export default function InvoicePreview({ invoiceData }: { invoiceData: InvoiceDa
       )}
 
       {/* Header with top padding for logo */}
-      <div className={`border-b-2 border-[#fcc425] pb-6 mb-6 ${invoiceData.logoUrl ? 'pt-20' : ''}`}>
-        <h1 className="text-4xl font-bold text-[#464646] mb-2">INVOICE</h1>
-        <p className="text-[#bebebf]">{invoiceData.invoiceNumber}</p>
+      <div className={`border-b-2 border-[#fcc425] pb-6 mb-6 ${quotationData.logoUrl ? 'pt-20' : ''}`}>
+        <h1 className="text-4xl font-bold text-[#464646] mb-2">QUOTATION</h1>
+        <p className="text-[#bebebf]">{quotationData.quotationNumber}</p>
       </div>
 
       {/* From & To Section */}
@@ -75,48 +75,56 @@ export default function InvoicePreview({ invoiceData }: { invoiceData: InvoiceDa
         <div>
           <h3 className="text-sm font-semibold text-[#bebebf] mb-2">FROM</h3>
           <div className="text-[#464646]">
-            <p className="font-semibold">{invoiceData.fromName || 'Your Name'}</p>
-            <p className="text-sm">{invoiceData.fromEmail || 'your@email.com'}</p>
-            {invoiceData.fromAddress && <p className="text-sm">{invoiceData.fromAddress}</p>}
-            {(invoiceData.fromCity || invoiceData.fromCountry) && (
+            <p className="font-semibold">{quotationData.fromName || 'Your Name'}</p>
+            <p className="text-sm">{quotationData.fromEmail || 'your@email.com'}</p>
+            {quotationData.fromAddress && <p className="text-sm">{quotationData.fromAddress}</p>}
+            {(quotationData.fromCity || quotationData.fromCountry) && (
               <p className="text-sm">
-                {invoiceData.fromCity}
-                {invoiceData.fromCity && invoiceData.fromCountry && ', '}
-                {invoiceData.fromCountry}
+                {quotationData.fromCity}
+                {quotationData.fromCity && quotationData.fromCountry && ', '}
+                {quotationData.fromCountry}
               </p>
             )}
           </div>
         </div>
 
         <div>
-          <h3 className="text-sm font-semibold text-[#bebebf] mb-2">BILL TO</h3>
+          <h3 className="text-sm font-semibold text-[#bebebf] mb-2">QUOTE FOR</h3>
           <div className="text-[#464646]">
-            <p className="font-semibold">{invoiceData.toName || 'Client Name'}</p>
-            <p className="text-sm">{invoiceData.toEmail || 'client@email.com'}</p>
-            {invoiceData.toAddress && <p className="text-sm">{invoiceData.toAddress}</p>}
-            {(invoiceData.toCity || invoiceData.toCountry) && (
+            <p className="font-semibold">{quotationData.toName || 'Client Name'}</p>
+            <p className="text-sm">{quotationData.toEmail || 'client@email.com'}</p>
+            {quotationData.toAddress && <p className="text-sm">{quotationData.toAddress}</p>}
+            {(quotationData.toCity || quotationData.toCountry) && (
               <p className="text-sm">
-                {invoiceData.toCity}
-                {invoiceData.toCity && invoiceData.toCountry && ', '}
-                {invoiceData.toCountry}
+                {quotationData.toCity}
+                {quotationData.toCity && quotationData.toCountry && ', '}
+                {quotationData.toCountry}
               </p>
             )}
           </div>
         </div>
       </div>
 
-      {/* Invoice Details */}
-      <div className="grid grid-cols-2 gap-4 mb-8 bg-[#fcfcfc] p-4 rounded-lg">
+      {/* Quotation Details */}
+      <div className="grid grid-cols-3 gap-4 mb-8 bg-[#fcfcfc] p-4 rounded-lg">
         <div>
-          <p className="text-sm text-[#bebebf]">Invoice Date</p>
+          <p className="text-sm text-[#bebebf]">Quotation Date</p>
           <p className="font-semibold text-[#464646]">
-            {invoiceData.invoiceDate ? new Date(invoiceData.invoiceDate).toLocaleDateString() : '-'}
+            {quotationData.quotationDate ? new Date(quotationData.quotationDate).toLocaleDateString() : '-'}
           </p>
         </div>
         <div>
-          <p className="text-sm text-[#bebebf]">Due Date</p>
+          <p className="text-sm text-[#bebebf]">Valid Until</p>
           <p className="font-semibold text-[#464646]">
-            {invoiceData.dueDate ? new Date(invoiceData.dueDate).toLocaleDateString() : '-'}
+            {quotationData.validUntil ? new Date(quotationData.validUntil).toLocaleDateString() : '-'}
+          </p>
+        </div>
+        <div>
+          <p className="text-sm text-[#bebebf]">Days Valid</p>
+          <p className="font-semibold text-[#464646]">
+            {quotationData.validUntil && quotationData.quotationDate
+              ? Math.ceil((new Date(quotationData.validUntil).getTime() - new Date(quotationData.quotationDate).getTime()) / (1000 * 60 * 60 * 24))
+              : '-'}
           </p>
         </div>
       </div>
@@ -133,7 +141,7 @@ export default function InvoicePreview({ invoiceData }: { invoiceData: InvoiceDa
             </tr>
           </thead>
           <tbody>
-            {invoiceData.items.map((item, index) => (
+            {quotationData.items.map((item, index) => (
               <tr key={index} className="border-b border-[#e9eaea]">
                 <td className="py-3 text-[#464646]">{item.description || 'Item description'}</td>
                 <td className="py-3 text-right text-[#464646]">{item.quantity}</td>
@@ -152,19 +160,19 @@ export default function InvoicePreview({ invoiceData }: { invoiceData: InvoiceDa
             <span className="text-[#bebebf]">Subtotal:</span>
             <span className="text-[#464646] font-semibold">${calculateSubtotal().toFixed(2)}</span>
           </div>
-          {invoiceData.tax > 0 && (
+          {quotationData.tax > 0 && (
             <div className="flex justify-between text-sm">
-              <span className="text-[#bebebf]">Tax ({invoiceData.tax}%):</span>
+              <span className="text-[#bebebf]">Tax ({quotationData.tax}%):</span>
               <span className="text-[#464646] font-semibold">
-                ${((calculateSubtotal() * invoiceData.tax) / 100).toFixed(2)}
+                ${((calculateSubtotal() * quotationData.tax) / 100).toFixed(2)}
               </span>
             </div>
           )}
-          {invoiceData.discount > 0 && (
+          {quotationData.discount > 0 && (
             <div className="flex justify-between text-sm">
-              <span className="text-[#bebebf]">Discount ({invoiceData.discount}%):</span>
+              <span className="text-[#bebebf]">Discount ({quotationData.discount}%):</span>
               <span className="text-[#464646] font-semibold">
-                -${((calculateSubtotal() * invoiceData.discount) / 100).toFixed(2)}
+                -${((calculateSubtotal() * quotationData.discount) / 100).toFixed(2)}
               </span>
             </div>
           )}
@@ -175,33 +183,17 @@ export default function InvoicePreview({ invoiceData }: { invoiceData: InvoiceDa
         </div>
       </div>
 
-      {/* Notes */}
-      {invoiceData.notes && (
-        <div className="mb-6">
-          <h3 className="text-sm font-semibold text-[#bebebf] mb-2">NOTES</h3>
-          <p className="text-sm text-[#464646] whitespace-pre-wrap">{invoiceData.notes}</p>
-        </div>
-      )}
-
-      {/* Terms */}
-      {invoiceData.terms && (
-        <div className="mb-6">
-          <h3 className="text-sm font-semibold text-[#bebebf] mb-2">TERMS & CONDITIONS</h3>
-          <p className="text-sm text-[#464646] whitespace-pre-wrap">{invoiceData.terms}</p>
-        </div>
-      )}
-
-      {/* Bottom Signature */}
-      {invoiceData.signatureUrl && (
+      {/* Signature */}
+      {quotationData.signatureUrl && (
         <div className={`mt-6 pt-6 border-t border-[#e9eaea] flex ${
-          invoiceData.signaturePosition === 'bottom-center' ? 'justify-center' : 
-          invoiceData.signaturePosition === 'bottom-right' ? 'justify-end' : 
+          quotationData.signaturePosition === 'bottom-center' ? 'justify-center' : 
+          quotationData.signaturePosition === 'bottom-right' ? 'justify-end' : 
           'justify-start'
         }`}>
           <div className="flex flex-col items-start">
             <p className="text-sm text-[#bebebf] mb-2">Authorized By:</p>
             <img 
-              src={invoiceData.signatureUrl} 
+              src={quotationData.signatureUrl} 
               alt="Signature" 
               className="h-12 max-w-xs object-contain"
               onError={(e) => {
@@ -209,6 +201,22 @@ export default function InvoicePreview({ invoiceData }: { invoiceData: InvoiceDa
               }}
             />
           </div>
+        </div>
+      )}
+
+      {/* Notes */}
+      {quotationData.notes && (
+        <div className="mb-6">
+          <h3 className="text-sm font-semibold text-[#bebebf] mb-2">NOTES</h3>
+          <p className="text-sm text-[#464646] whitespace-pre-wrap">{quotationData.notes}</p>
+        </div>
+      )}
+
+      {/* Terms */}
+      {quotationData.terms && (
+        <div>
+          <h3 className="text-sm font-semibold text-[#bebebf] mb-2">TERMS & CONDITIONS</h3>
+          <p className="text-sm text-[#464646] whitespace-pre-wrap">{quotationData.terms}</p>
         </div>
       )}
     </div>
